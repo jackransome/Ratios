@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using System;
 
 namespace Ratios
 {
@@ -49,12 +51,28 @@ namespace Ratios
 
         ButtonState previousLeftButton = ButtonState.Released;
 
+        float bpm = 130;
+
+        // Audio stuff
+        private const int SampleRate = 44100;
+        private const int ChannelsCount = 2;
+        
+        private DynamicSoundEffectInstance _instance;
+
+        // On your class
+        public const int SamplesPerBuffer = 3000;
+        private float[,] _workingBuffer;
+        private byte[] _xnaBuffer;
+
+        private double _time = 0.0;
+
         public Game1()
         {
-            var rand = new System.Random();
-            for (int i = 0; i < 96; i++)
+            var rand = new Random();
+            //generating notes C1 to B8
+            for (int i = 0; i < 84; i++)
             {
-                sequencer.addNote((float)(16.35*System.Math.Pow(1.06, i)), 0, 10);
+                sequencer.addNote((float)(32.70 * Math.Pow((float)Math.Pow(2, 1.0f / 12.0f), i)), i, 1);
             }
 
             graphics = new GraphicsDeviceManager(this);
@@ -84,7 +102,6 @@ namespace Ratios
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             logo = this.Content.Load<Texture2D>("afx logo");
@@ -92,8 +109,16 @@ namespace Ratios
             blackSquare = new Texture2D(GraphicsDevice, 1, 1);
             blackSquare.SetData(new Color[] { Color.DarkBlue });
 
+            // audio stuff
 
-            // TODO: use this.Content to load your game content here
+            _instance = new DynamicSoundEffectInstance(SampleRate, (ChannelsCount == 2) ? AudioChannels.Stereo : AudioChannels.Mono);
+
+            _workingBuffer = new float[ChannelsCount, SamplesPerBuffer];
+            const int bytesPerSample = 2;
+            _xnaBuffer = new byte[ChannelsCount * SamplesPerBuffer * bytesPerSample];
+
+            _instance.Play();
+
         }
 
         /// <summary>
@@ -182,8 +207,8 @@ namespace Ratios
             {
                 noteDrawing = true;
                 selecting = false;
-                selectInit.X = mouseState.X;
-                selectInit.Y = mouseState.Y;
+                selectInit.X = snappedMouse.X;
+                selectInit.Y = snappedMouse.Y;
                 sequencer.deselectAll();
             }
             else if (mouseState.LeftButton == ButtonState.Released && previousLeftButton == ButtonState.Pressed)
@@ -191,9 +216,9 @@ namespace Ratios
                 noteDrawing = false;
                 float frequency = getFreqFromY((int)selectInit.Y);
                 int startTime = getStartTimeFromX((int)selectInit.X);
-                if (startTime > 0 && frequency > 30 && frequency < 20000 && mouseState.X > selectInit.X)
+                if (startTime >= 0 && frequency > 30 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
-                    sequencer.addNote(frequency, startTime, (int)((mouseState.X - selectInit.X)/xZoomFactor));
+                    sequencer.addNote(frequency, startTime, (int)((snappedMouse.X - selectInit.X)/xZoomFactor));
                 }
             }
             else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
@@ -263,13 +288,22 @@ namespace Ratios
             float tempX = getStartTimeFromX(mouseState.X);
             float tempY = mouseState.Y;
 
-            snappedMouse.X = getXFromStartTime(50 * (int)(tempX / 50));
-            snappedMouse.Y = tempY;
+            float ratio = (float)Math.Pow(2, 1.0f / 12.0f);
+            float baseFreq = 440;
+
+            float xSnap = 50;
+
+            snappedMouse.X = getXFromStartTime((int)(xSnap * Math.Round(tempX / xSnap)));
+            snappedMouse.Y = getYFromFreq((float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY(mouseState.Y)/ baseFreq, ratio)))));
 
             previousLeftButton = mouseState.LeftButton;
             previousRightButton = mouseState.RightButton;
             previousScrollValue = mouseState.ScrollWheelValue;
-            // TODO: Add your update logic here
+
+            while (_instance.PendingBufferCount < 3)
+            {
+                SubmitBuffer();
+            }
 
             base.Update(gameTime);
         }
@@ -281,8 +315,7 @@ namespace Ratios
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // TODO: Add your drawing code here
+            
             spriteBatch.Begin();
 
             scale = new Vector2(0.25f,0.25f);
@@ -324,10 +357,10 @@ namespace Ratios
             }
 
             //drawing the red bit when drawing a new note
-            if (noteDrawing && getStartTimeFromX((int)selectInit.X) > 0 && getFreqFromY((int)selectInit.Y) > 30 && getFreqFromY((int)selectInit.Y) < 20000 && mouseState.X > selectInit.X)
+            if (noteDrawing && getStartTimeFromX((int)selectInit.X) >= 0 && getFreqFromY((int)selectInit.Y) > 30 && getFreqFromY((int)selectInit.Y) < 20000 && snappedMouse.X > selectInit.X)
             {
                 blackSquare.SetData(new Color[] { Color.Red });
-                spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), 2), Color.Red * 0.33f);
+                spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(snappedMouse.X - selectInit.X), 2), Color.Red * 0.33f);
             }
 
             //drawing mouse cursor
@@ -346,13 +379,12 @@ namespace Ratios
 
         float getFreqFromY(int _y)
         {
-            return (float)(System.Math.Pow(2, -15 * (((_y - zoomPoint.Y) / yZoomFactor - screenDimensions.Y + cameraPosition.Y + zoomPoint.Y) / screenDimensions.Y - 1)) + 4);
-            
+            return (float)(Math.Pow(2, -15 * (((_y - zoomPoint.Y) / yZoomFactor - screenDimensions.Y + cameraPosition.Y + zoomPoint.Y) / screenDimensions.Y - 1)) + 4);
         }
 
         int getYFromFreq(float _freq)
         {
-            float y = (float)(screenDimensions.Y * (1 - System.Math.Log(_freq - 4, 2) * (1.0f / 15.0f)));
+            float y = (float)(screenDimensions.Y * (1 - Math.Log(_freq - 4, 2) * (1.0f / 15.0f)));
             //Applying y camera transform
             y += (screenDimensions.Y - cameraPosition.Y);
             // Applying y zoom
@@ -373,6 +405,65 @@ namespace Ratios
             // Applying x zoom
             x = ((xZoomFactor * (x - zoomPoint.X)) + zoomPoint.X);
             return (int)x;
+        }
+
+        // from https://www.david-gouveia.com/creating-a-basic-synth-in-xna-part-ii
+        //converts from working buffer to xna buffer
+        private static void ConvertBuffer(float[,] from, byte[] to)
+        {
+            const int bytesPerSample = 2;
+            int channels = from.GetLength(0);
+            int bufferSize = from.GetLength(1);
+
+            // Make sure the buffer sizes are correct
+            System.Diagnostics.Debug.Assert(to.Length == bufferSize * channels * bytesPerSample, "Buffer sizes are mismatched.");
+
+            for (int i = 0; i < bufferSize; i++)
+            {
+                for (int c = 0; c < channels; c++)
+                {
+                    // First clamp the value to the [-1.0..1.0] range
+                    float floatSample = MathHelper.Clamp(from[c, i], -1.0f, 1.0f);
+
+                    // Convert it to the 16 bit [short.MinValue..short.MaxValue] range
+                    short shortSample = (short)(floatSample >= 0.0f ? floatSample * short.MaxValue : floatSample * short.MinValue * -1);
+
+                    // Calculate the right index based on the PCM format of interleaved samples per channel [L-R-L-R]
+                    int index = i * channels * bytesPerSample + c * bytesPerSample;
+
+                    // Store the 16 bit sample as two consecutive 8 bit values in the buffer with regard to endian-ness
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        to[index] = (byte)(shortSample >> 8);
+                        to[index + 1] = (byte)shortSample;
+                    }
+                    else
+                    {
+                        to[index] = (byte)shortSample;
+                        to[index + 1] = (byte)(shortSample >> 8);
+                    }
+                }
+            }
+        }
+        private void FillWorkingBuffer()
+        {
+            for (int i = 0; i < SamplesPerBuffer; i++)
+            {
+                // Here is where you sample your wave function
+                _workingBuffer[0, i] = (float)sequencer.getDisplacement(false, _time); // Left Channel
+                _workingBuffer[1, i] = (float)sequencer.getDisplacement(true, _time); // Right Channel
+
+                // Advance time passed since beginning
+                // Since the amount of samples in a second equals the chosen SampleRate
+                // Then each sample should advance the time by 1 / SampleRate
+                _time += 1.0 / SampleRate;
+            }
+        }
+        private void SubmitBuffer()
+        {
+            FillWorkingBuffer();
+            ConvertBuffer(_workingBuffer, _xnaBuffer);
+            _instance.SubmitBuffer(_xnaBuffer);
         }
     }
 }
