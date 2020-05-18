@@ -31,11 +31,19 @@ namespace Ratios
 
         Vector2 scale;
 
-        float xZoomFactor = 1;
+        float xZoomFactor = 10;
 
         float yZoomFactor = 1;
 
-        Vector2 cameraPosition = new Vector2(1920, 1080);
+        float minXZoomFactor = 10;
+
+        float maxXZoomFactor = 800;
+
+        float minYZoomFactor = 1;
+
+        float maxYZoomFactor = 30;
+
+        Vector2 cameraPosition = new Vector2(1920/2, 1080/2);
 
         int previousScrollValue = 0;
 
@@ -77,6 +85,8 @@ namespace Ratios
 
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            sequencer.bpm = bpm;
 
             graphics.PreferredBackBufferWidth = (int)screenDimensions.X;
             graphics.PreferredBackBufferHeight = (int)screenDimensions.Y;
@@ -141,19 +151,24 @@ namespace Ratios
             keyboardState = Keyboard.GetState();
             if (keyboardState.IsKeyDown(Keys.Escape))
                 Exit();
-            
+
+            if (keyboardState.IsKeyDown(Keys.Space))
+            {
+                _time = 0;
+            }
+
             if (keyboardState.IsKeyDown(Keys.LeftControl))
             {
                 if (mouseState.ScrollWheelValue < previousScrollValue)
                 {
-                    if (xZoomFactor > 1)
+                    if (xZoomFactor > minXZoomFactor)
                     {
                         xZoomFactor /= 1.25f;
                     }
                 }
                 else if (mouseState.ScrollWheelValue > previousScrollValue)
                 {
-                    if (xZoomFactor < 30)
+                    if (xZoomFactor < maxXZoomFactor)
                     {
                         xZoomFactor *= 1.25f;
                     }
@@ -162,14 +177,14 @@ namespace Ratios
             {
                 if (mouseState.ScrollWheelValue < previousScrollValue)
                 {
-                    if (yZoomFactor > 1)
+                    if (yZoomFactor > minYZoomFactor)
                     {
                         yZoomFactor /= 1.25f;
                     }
                 }
                 else if (mouseState.ScrollWheelValue > previousScrollValue)
                 {
-                    if (yZoomFactor < 30)
+                    if (yZoomFactor < maxYZoomFactor)
                     {
                         yZoomFactor *= 1.25f;
                     }
@@ -215,10 +230,10 @@ namespace Ratios
             {
                 noteDrawing = false;
                 float frequency = getFreqFromY((int)selectInit.Y);
-                int startTime = getStartTimeFromX((int)selectInit.X);
-                if (startTime >= 0 && frequency > 30 && frequency < 20000 && snappedMouse.X > selectInit.X)
+                float startTime = getStartTimeFromX((int)selectInit.X);
+                if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
-                    sequencer.addNote(frequency, startTime, (int)((snappedMouse.X - selectInit.X)/xZoomFactor));
+                    sequencer.addNote(frequency, startTime, ((snappedMouse.X - selectInit.X)/xZoomFactor));
                 }
             }
             else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
@@ -291,7 +306,7 @@ namespace Ratios
             float ratio = (float)Math.Pow(2, 1.0f / 12.0f);
             float baseFreq = 440;
 
-            float xSnap = 50;
+            float xSnap = 1;
 
             snappedMouse.X = getXFromStartTime((int)(xSnap * Math.Round(tempX / xSnap)));
             snappedMouse.Y = getYFromFreq((float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY(mouseState.Y)/ baseFreq, ratio)))));
@@ -355,8 +370,7 @@ namespace Ratios
                     spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), (int)(mouseState.Y - selectInit.Y)), Color.Green * 0.33f);
                 }
             }
-
-            //drawing the red bit when drawing a new note
+                //drawing the red bit when drawing a new note
             if (noteDrawing && getStartTimeFromX((int)selectInit.X) >= 0 && getFreqFromY((int)selectInit.Y) > 30 && getFreqFromY((int)selectInit.Y) < 20000 && snappedMouse.X > selectInit.X)
             {
                 blackSquare.SetData(new Color[] { Color.Red });
@@ -371,6 +385,18 @@ namespace Ratios
             blackSquare.SetData(new Color[] { Color.Yellow });
             spriteBatch.Draw(blackSquare, new Rectangle((int)snappedMouse.X, (int)snappedMouse.Y, 2, 2), Color.Yellow);
 
+            //drawing the play line
+            blackSquare.SetData(new Color[] { Color.Yellow });
+            spriteBatch.Draw(blackSquare, new Rectangle((int)getXFromStartTime((float)_time*(bpm/60)), 0, 2, (int)screenDimensions.Y), Color.Yellow);
+
+            //drawing left border
+            spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(0) - 2, 0, 2, (int)screenDimensions.Y), Color.Black);
+
+            //drawing top border
+            spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(20), (int)screenDimensions.X, 2), Color.Black);
+
+            //drawing bottom border
+            spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(20000), (int)screenDimensions.X, 2), Color.Black);
 
             spriteBatch.End();
 
@@ -392,12 +418,12 @@ namespace Ratios
             return (int)y;
         }
 
-        int getStartTimeFromX(int _x)
+        float getStartTimeFromX(int _x)
         {
-            return (int)((_x - zoomPoint.X) / xZoomFactor - screenDimensions.X + cameraPosition.X + zoomPoint.X);
+            return ((_x - zoomPoint.X) / xZoomFactor - screenDimensions.X + cameraPosition.X + zoomPoint.X);
         }
 
-        int getXFromStartTime(int _startTime)
+        int getXFromStartTime(float _startTime)
         {
             float x = _startTime;
             //Applying x camera transform

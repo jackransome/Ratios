@@ -1,0 +1,23 @@
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\Content\afx logo.xnb
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\Ratios.exe
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\Ratios.pdb
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\MonoGame.Framework.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.MediaFoundation.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.XAudio2.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.DXGI.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.Direct3D11.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.Direct2D1.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.XInput.dll
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\MonoGame.Framework.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.MediaFoundation.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.XAudio2.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.DXGI.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.Direct3D11.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.Direct2D1.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\bin\Windows\x86\Release\SharpDX.XInput.xml
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.csproj.CoreCompileInputs.cache
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.csproj.CopyComplete
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.exe
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.pdb

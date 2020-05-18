@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 class Note
 {
     public float frequency;
-    public int startTime;
-    public int duration;
+    public float startTime; // in beats
+    public float duration; // in beats
     public bool selected;
     public float volume;
-    public Note(float _frequency, int _startTime, int _duration)
+    public Note(float _frequency, float _startTime, float _duration)
     {
         volume = 0.1f;
         selected = false;
@@ -29,9 +29,10 @@ namespace Ratios
 {
     class Sequencer
     {
+        public float bpm;
         Synthesizer synthesizer = new Synthesizer();
         public List<Note> notes = new List<Note>();
-        public void addNote(float _frequency, int _startTime, int _duration)
+        public void addNote(float _frequency, float _startTime, float _duration)
         {
             notes.Add(new Note(_frequency, _startTime, _duration));
         }
@@ -53,21 +54,23 @@ namespace Ratios
 
         public double getDisplacement(bool _channel, double _time)
         {
+            //convert to beat:
+            float beatTime = (float)((bpm/60)*_time);
             double output = 0;
             for (int i = 0; i < notes.Count; i++)
             {
                 //deletes a note if it's already been played
-                if (_time > notes[i].duration + notes[i].startTime)
+                if (beatTime > notes[i].duration + notes[i].startTime)
                 {
                     //notes.erase(notes.begin() + i);
                     //i--;
                 }
-                else if (_time >= notes[i].startTime)
+                else if (beatTime >= notes[i].startTime)
                 {
-                    if (_time < notes[i].startTime + notes[i].duration)
+                    if (beatTime < notes[i].startTime + notes[i].duration)
                     {
                         //adds the displacement from the note at the current time to the final sequencer output
-                        output += synthesizer.sinGenerator(_time, notes[i].frequency) * notes[i].volume;
+                        output += synthesizer.sinGenerator(beatTime, notes[i].frequency) * notes[i].volume;
                     }
                 }
             }
