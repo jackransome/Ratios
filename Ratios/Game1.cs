@@ -39,9 +39,15 @@ namespace Ratios
 
         Vector2 selectInit =  new Vector2(0, 0);
 
-        bool selecting;
+        Vector2 snappedMouse = new Vector2(0, 0);
+
+        bool selecting = false;
+
+        bool noteDrawing = false;
 
         ButtonState previousRightButton = ButtonState.Released;
+
+        ButtonState previousLeftButton = ButtonState.Released;
 
         public Game1()
         {
@@ -160,28 +166,109 @@ namespace Ratios
             {
                 cameraPosition.X += 20 / xZoomFactor;
             }
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (keyboardState.IsKeyDown(Keys.Delete))
             {
-                float frequency = (float)(System.Math.Pow(2, -15 * (((mouseState.Position.Y - zoomPoint.Y) / yZoomFactor - screenDimensions.Y + cameraPosition.Y + zoomPoint.Y) / screenDimensions.Y - 1)) + 4);
-                int startTime = (int)((mouseState.Position.X - zoomPoint.X) / xZoomFactor - screenDimensions.X + cameraPosition.X + zoomPoint.X);
-                if (startTime > 0 && frequency > 30 && frequency < 20000)
+                //finding and deleting all selected notes
+                for (int i = 0; i < sequencer.notes.Count; i++)
                 {
-                    sequencer.addNote(frequency, startTime, 10);
+                    if (sequencer.notes[i].selected)
+                    {
+                        sequencer.removeNote(i);
+                        i--;
+                    }
                 }
             }
-            if (mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
+            if (mouseState.LeftButton == ButtonState.Pressed && previousLeftButton == ButtonState.Released)
+            {
+                noteDrawing = true;
+                selecting = false;
+                selectInit.X = mouseState.X;
+                selectInit.Y = mouseState.Y;
+                sequencer.deselectAll();
+            }
+            else if (mouseState.LeftButton == ButtonState.Released && previousLeftButton == ButtonState.Pressed)
+            {
+                noteDrawing = false;
+                float frequency = getFreqFromY((int)selectInit.Y);
+                int startTime = getStartTimeFromX((int)selectInit.X);
+                if (startTime > 0 && frequency > 30 && frequency < 20000 && mouseState.X > selectInit.X)
+                {
+                    sequencer.addNote(frequency, startTime, (int)((mouseState.X - selectInit.X)/xZoomFactor));
+                }
+            }
+            else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
             {
                 selectInit.X = mouseState.X;
                 selectInit.Y = mouseState.Y;
                 selecting = true;
             }
-            else if (mouseState.RightButton == ButtonState.Released && previousRightButton == ButtonState.Pressed)
+            else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Released && previousRightButton == ButtonState.Pressed)
             {
+                //select notes inside the rect:
+                for (int i = 0; i < sequencer.notes.Count; i++)
+                {
+                    if (!keyboardState.IsKeyDown(Keys.LeftShift))
+                    {
+                        sequencer.notes[i].setSelected(false);
+                    }
+                    
+                    //checking startTime
+                    if (mouseState.X < selectInit.X)
+                    {
+                        if (mouseState.X < getXFromStartTime(sequencer.notes[i].startTime) && getXFromStartTime(sequencer.notes[i].startTime) < selectInit.X)
+                        {
+                            //checking freq:
+                            if (mouseState.Y < selectInit.Y)
+                            {
+                                if (mouseState.Y < getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) < selectInit.Y)
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                            else if (mouseState.Y > selectInit.Y)
+                            {
+                                if (mouseState.Y > getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) > selectInit.Y)
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                        }
+                    }
+                    else if (mouseState.X > selectInit.X)
+                    {
+                        if (mouseState.X > getXFromStartTime(sequencer.notes[i].startTime) && getXFromStartTime(sequencer.notes[i].startTime) > selectInit.X)
+                        {
+                            //checking freq:
+                            if (mouseState.Y < selectInit.Y)
+                            {
+                                if (mouseState.Y < getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) < selectInit.Y)
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                            else if (mouseState.Y > selectInit.Y)
+                            {
+                                if (mouseState.Y > getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) > selectInit.Y)
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                        }
+                    }
+                }
                 selecting = false;
             }
 
+            //getting the snapped position of the mouse
+            float tempX = getStartTimeFromX(mouseState.X);
+            float tempY = mouseState.Y;
+
+            snappedMouse.X = getXFromStartTime(50 * (int)(tempX / 50));
+            snappedMouse.Y = tempY;
+
+            previousLeftButton = mouseState.LeftButton;
             previousRightButton = mouseState.RightButton;
-                previousScrollValue = mouseState.ScrollWheelValue;
+            previousScrollValue = mouseState.ScrollWheelValue;
             // TODO: Add your update logic here
 
             base.Update(gameTime);
@@ -203,23 +290,24 @@ namespace Ratios
             //spriteBatch.Draw(logo, position: Vector2.Zero, scale: scale);
 
             zoomPoint = new Vector2(screenDimensions.X/2, screenDimensions.Y / 2);
+            
+            //drawing notes
             for (int i = 0; i < sequencer.notes.Count; i++)
             {
-                
-                float x = sequencer.notes[i].startTime;
-                //Applying x camera transform
-                x += (screenDimensions.X - cameraPosition.X);
-                // Applying x zoom
-                x = ((xZoomFactor * (x - zoomPoint.X)) + zoomPoint.X);
-                float y = (float)(screenDimensions.Y * (1 - System.Math.Log(sequencer.notes[i].frequency - 4, 2) * (1.0f / 15.0f)));
-                //Applying y camera transform
-                y += (screenDimensions.Y - cameraPosition.Y);
-                // Applying y zoom
-                y = ((yZoomFactor * (y - zoomPoint.Y)) + zoomPoint.Y);
-                blackSquare.SetData(new Color[] { Color.Black });
-                spriteBatch.Draw(blackSquare, new Rectangle((int)x, (int)y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.Black);
+                int x = getXFromStartTime(sequencer.notes[i].startTime);
+                int y = getYFromFreq(sequencer.notes[i].frequency);
+                if (sequencer.notes[i].selected)
+                {
+                    blackSquare.SetData(new Color[] { Color.GreenYellow });
+                    spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.GreenYellow);
+                } else
+                {
+                    blackSquare.SetData(new Color[] { Color.Black });
+                    spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.Black);
+                }
             }
 
+            //drawing the green selection rectangle
             if (selecting)
             {
                 blackSquare.SetData(new Color[] { Color.Green });
@@ -235,12 +323,56 @@ namespace Ratios
                 }
             }
 
+            //drawing the red bit when drawing a new note
+            if (noteDrawing && getStartTimeFromX((int)selectInit.X) > 0 && getFreqFromY((int)selectInit.Y) > 30 && getFreqFromY((int)selectInit.Y) < 20000 && mouseState.X > selectInit.X)
+            {
+                blackSquare.SetData(new Color[] { Color.Red });
+                spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), 2), Color.Red * 0.33f);
+            }
+
+            //drawing mouse cursor
             blackSquare.SetData(new Color[] { Color.White });
             spriteBatch.Draw(blackSquare, new Rectangle(mouseState.X, mouseState.Y, 2, 2), Color.White);
+
+            //drawing snapped cursor
+            blackSquare.SetData(new Color[] { Color.Yellow });
+            spriteBatch.Draw(blackSquare, new Rectangle((int)snappedMouse.X, (int)snappedMouse.Y, 2, 2), Color.Yellow);
+
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        float getFreqFromY(int _y)
+        {
+            return (float)(System.Math.Pow(2, -15 * (((_y - zoomPoint.Y) / yZoomFactor - screenDimensions.Y + cameraPosition.Y + zoomPoint.Y) / screenDimensions.Y - 1)) + 4);
+            
+        }
+
+        int getYFromFreq(float _freq)
+        {
+            float y = (float)(screenDimensions.Y * (1 - System.Math.Log(_freq - 4, 2) * (1.0f / 15.0f)));
+            //Applying y camera transform
+            y += (screenDimensions.Y - cameraPosition.Y);
+            // Applying y zoom
+            y = ((yZoomFactor * (y - zoomPoint.Y)) + zoomPoint.Y);
+            return (int)y;
+        }
+
+        int getStartTimeFromX(int _x)
+        {
+            return (int)((_x - zoomPoint.X) / xZoomFactor - screenDimensions.X + cameraPosition.X + zoomPoint.X);
+        }
+
+        int getXFromStartTime(int _startTime)
+        {
+            float x = _startTime;
+            //Applying x camera transform
+            x += (screenDimensions.X - cameraPosition.X);
+            // Applying x zoom
+            x = ((xZoomFactor * (x - zoomPoint.X)) + zoomPoint.X);
+            return (int)x;
         }
     }
 }
