@@ -21,6 +21,8 @@ namespace Ratios
 
         Vector2 screenDimensions = new Vector2(1920, 1080);
 
+        FileLoader fileLoader = new FileLoader();
+
         Sequencer sequencer = new Sequencer();
 
         MouseState mouseState;
@@ -74,19 +76,24 @@ namespace Ratios
 
         private double _time = 0.0;
 
+
         public Game1()
         {
+            sequencer .attachFileLoader(fileLoader);
+
             var rand = new Random();
             //generating notes C1 to B8
             for (int i = 0; i < 84; i++)
             {
-                sequencer.addNote((float)(32.70 * Math.Pow((float)Math.Pow(2, 1.0f / 12.0f), i)), i, 1);
+                sequencer.addNote((float)(32.70 * Math.Pow((float)Math.Pow(2, 1.0f / 12.0f), i)), i, 1, 1, "sample1");
             }
 
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
             sequencer.bpm = bpm;
+
+            fileLoader.loadSample("sample1", "test.wav");
 
             graphics.PreferredBackBufferWidth = (int)screenDimensions.X;
             graphics.PreferredBackBufferHeight = (int)screenDimensions.Y;
@@ -233,7 +240,7 @@ namespace Ratios
                 float startTime = getStartTimeFromX((int)selectInit.X);
                 if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
-                    sequencer.addNote(frequency, startTime, ((snappedMouse.X - selectInit.X)/xZoomFactor));
+                    sequencer.addNote(frequency, startTime, ((snappedMouse.X - selectInit.X)/xZoomFactor), 1, "sample1");
                 }
             }
             else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
@@ -378,12 +385,12 @@ namespace Ratios
             }
 
             //drawing mouse cursor
-            blackSquare.SetData(new Color[] { Color.White });
-            spriteBatch.Draw(blackSquare, new Rectangle(mouseState.X, mouseState.Y, 2, 2), Color.White);
+            blackSquare.SetData(new Color[] { Color.Black });
+            spriteBatch.Draw(blackSquare, new Rectangle(mouseState.X, mouseState.Y, 2, 2), Color.Black * 0.5f);
 
             //drawing snapped cursor
-            blackSquare.SetData(new Color[] { Color.Yellow });
-            spriteBatch.Draw(blackSquare, new Rectangle((int)snappedMouse.X, (int)snappedMouse.Y, 2, 2), Color.Yellow);
+            blackSquare.SetData(new Color[] { Color.White });
+            spriteBatch.Draw(blackSquare, new Rectangle((int)snappedMouse.X, (int)snappedMouse.Y, 2, 2), Color.White);
 
             //drawing the play line
             blackSquare.SetData(new Color[] { Color.Yellow });
@@ -476,8 +483,8 @@ namespace Ratios
             for (int i = 0; i < SamplesPerBuffer; i++)
             {
                 // Here is where you sample your wave function
-                _workingBuffer[0, i] = (float)sequencer.getDisplacement(false, _time); // Left Channel
-                _workingBuffer[1, i] = (float)sequencer.getDisplacement(true, _time); // Right Channel
+                _workingBuffer[0, i] = sequencer.getDisplacement(false, _time); // Left Channel
+                _workingBuffer[1, i] = sequencer.getDisplacement(true, _time); // Right Channel
 
                 // Advance time passed since beginning
                 // Since the amount of samples in a second equals the chosen SampleRate

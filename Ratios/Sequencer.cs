@@ -11,13 +11,16 @@ class Note
     public float duration; // in beats
     public bool selected;
     public float volume;
-    public Note(float _frequency, float _startTime, float _duration)
+    public string sampleName = null;
+    public Note(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
     {
         volume = 0.1f;
         selected = false;
         frequency = _frequency;
         startTime = _startTime;
         duration = _duration;
+        volume = _volume;
+        sampleName = _sampleName;
     }
     public void setSelected(bool _selected)
     {
@@ -32,9 +35,14 @@ namespace Ratios
         public float bpm;
         Synthesizer synthesizer = new Synthesizer();
         public List<Note> notes = new List<Note>();
-        public void addNote(float _frequency, float _startTime, float _duration)
+        FileLoader fileLoader;
+        public void attachFileLoader(FileLoader _fileLoader)
         {
-            notes.Add(new Note(_frequency, _startTime, _duration));
+            fileLoader = _fileLoader;
+        }
+        public void addNote(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
+        {
+            notes.Add(new Note(_frequency, _startTime, _duration, _volume, _sampleName));
         }
         public void removeNote(int _index)
         {
@@ -52,30 +60,30 @@ namespace Ratios
             }
         }
 
-        public double getDisplacement(bool _channel, double _time)
+        public float getDisplacement(bool _channel, double _time)
         {
+            //_time is in seconds
             //convert to beat:
             float beatTime = (float)((bpm/60)*_time);
             double output = 0;
             for (int i = 0; i < notes.Count; i++)
             {
-                //deletes a note if it's already been played
-                if (beatTime > notes[i].duration + notes[i].startTime)
-                {
-                    //notes.erase(notes.begin() + i);
-                    //i--;
-                }
-                else if (beatTime >= notes[i].startTime)
+                if (beatTime >= notes[i].startTime)
                 {
                     if (beatTime < notes[i].startTime + notes[i].duration)
                     {
                         //adds the displacement from the note at the current time to the final sequencer output
-                        output += synthesizer.sinGenerator(beatTime, notes[i].frequency) * notes[i].volume;
+                        if (notes[i].sampleName != null)
+                        {
+                            output += fileLoader.readSample(notes[i].sampleName, (int)(44100 * (beatTime - notes[i].startTime)*60/bpm));
+                        } else
+                        {
+                            output += synthesizer.sinGenerator(beatTime, notes[i].frequency) * notes[i].volume;
+                        }
                     }
                 }
             }
-            return output;
+            return (float)output;
         }
-
     }
 }

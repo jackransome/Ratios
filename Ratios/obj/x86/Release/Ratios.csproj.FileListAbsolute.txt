@@ -21,3 +21,4 @@ C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.csproj.CoreC
 C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.csproj.CopyComplete
 C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.exe
 C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.pdb
+C:\Users\Jack\Documents\GitHub\Ratios\Ratios\obj\x86\Release\Ratios.csprojAssemblyReference.cache
