@@ -70,7 +70,7 @@ namespace Ratios
         private DynamicSoundEffectInstance _instance;
 
         // On your class
-        public const int SamplesPerBuffer = 3000;
+        public const int SamplesPerBuffer = 500;
         private float[,] _workingBuffer;
         private byte[] _xnaBuffer;
 
@@ -93,7 +93,7 @@ namespace Ratios
 
             sequencer.bpm = bpm;
 
-            fileLoader.loadSample("sample1", "test.wav");
+            fileLoader.loadSample("sample1", "untitled.wav");
 
             graphics.PreferredBackBufferWidth = (int)screenDimensions.X;
             graphics.PreferredBackBufferHeight = (int)screenDimensions.Y;
@@ -238,9 +238,14 @@ namespace Ratios
                 noteDrawing = false;
                 float frequency = getFreqFromY((int)selectInit.Y);
                 float startTime = getStartTimeFromX((int)selectInit.X);
+                if (startTime < 0)
+                {
+                    startTime = 0;
+                }
+                float duration = getStartTimeFromX((int)snappedMouse.X) - startTime;
                 if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
-                    sequencer.addNote(frequency, startTime, ((snappedMouse.X - selectInit.X)/xZoomFactor), 1, "sample1");
+                    sequencer.addNote(frequency, startTime, duration, 1, "sample1");
                 }
             }
             else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
@@ -394,7 +399,8 @@ namespace Ratios
 
             //drawing the play line
             blackSquare.SetData(new Color[] { Color.Yellow });
-            spriteBatch.Draw(blackSquare, new Rectangle((int)getXFromStartTime((float)_time*(bpm/60)), 0, 2, (int)screenDimensions.Y), Color.Yellow);
+            float u = (float)_time * (bpm / 60.0f);
+            spriteBatch.Draw(blackSquare, new Rectangle((int)getXFromStartTime((float)_time*(bpm/60.0f)), 0, 2, (int)screenDimensions.Y), Color.Yellow);
 
             //drawing left border
             spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(0) - 2, 0, 2, (int)screenDimensions.Y), Color.Black);
@@ -404,6 +410,13 @@ namespace Ratios
 
             //drawing bottom border
             spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(20000), (int)screenDimensions.X, 2), Color.Black);
+
+            //draw verticle lines
+            for (int i = 0; i < 1000; i++)
+            {
+                blackSquare.SetData(new Color[] { Color.White });
+                spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(i), 0, 2, (int)screenDimensions.Y), Color.White * 0.1f);
+            }
 
             spriteBatch.End();
 

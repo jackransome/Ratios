@@ -44,6 +44,34 @@ namespace Ratios
             return 0;
         }
 
+        public double readSample(string _name, float _sampleTime)
+        {
+            for (int i = 0; i < samples.Count; i++)
+            {
+                if (samples[i].name == _name)
+                {
+                    if (_sampleTime < samples[i].left.Length)
+                    {
+                        if (_sampleTime != Math.Floor(_sampleTime))
+                        {
+                            return samples[i].left[(int)Math.Floor(_sampleTime)] * (_sampleTime - Math.Floor(_sampleTime)) + samples[i].left[(int)Math.Ceiling(_sampleTime)] * (Math.Ceiling(_sampleTime) - _sampleTime);
+                        } else
+                        {
+
+                        }
+                        return samples[i].left[(int)_sampleTime];
+                    }
+                    else
+                    {
+                        return 0;
+                        //tried to read past end of sample
+                    }
+                }
+            }
+            //no sample found with this name
+            return 0;
+        }
+
         // from https://stackoverflow.com/questions/8754111/how-to-read-the-data-in-a-wav-file-to-an-array
 
         // convert two bytes to one double in the range -1 to 1

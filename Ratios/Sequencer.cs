@@ -75,7 +75,14 @@ namespace Ratios
                         //adds the displacement from the note at the current time to the final sequencer output
                         if (notes[i].sampleName != null)
                         {
-                            output += fileLoader.readSample(notes[i].sampleName, (int)(44100 * (beatTime - notes[i].startTime)*60/bpm));
+                            //if (_channel)
+                            //{
+                                output += fileLoader.readSample(notes[i].sampleName, (float)((44100 * (beatTime - notes[i].startTime) * 60 / bpm) * notes[i].frequency / 261.63));
+                            //}
+                            //else
+                            //{
+                                //output += fileLoader.readSample(notes[i].sampleName, (int)((44100 * (beatTime - notes[i].startTime) * 60 / bpm) * notes[i].frequency / 261.63));
+                            //}
                         } else
                         {
                             output += synthesizer.sinGenerator(beatTime, notes[i].frequency) * notes[i].volume;
