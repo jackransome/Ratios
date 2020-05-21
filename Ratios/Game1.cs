@@ -76,6 +76,8 @@ namespace Ratios
 
         private double _time = 0.0;
 
+        float ratio = (float)Math.Pow(2, 1.0f / 12.0f);
+        float baseFreq = 440;
 
         public Game1()
         {
@@ -213,6 +215,27 @@ namespace Ratios
             {
                 cameraPosition.X += 20 / xZoomFactor;
             }
+            //setting the base note to the first note selected
+            if (keyboardState.IsKeyDown(Keys.F))
+            {
+                for (int i = 0; i < sequencer.notes.Count; i++)
+                {
+                    if (sequencer.notes[i].selected)
+                    {
+                        baseFreq = sequencer.notes[i].frequency;
+                        break;
+                    }
+                }
+            }
+
+            if (keyboardState.IsKeyDown(Keys.G))
+            {
+                ratio = (float)Math.Pow(2, 1.0f / 12.0f);
+            }
+            if (keyboardState.IsKeyDown(Keys.H))
+            {
+                ratio = 1.5f;
+            }
             if (keyboardState.IsKeyDown(Keys.Delete))
             {
                 //finding and deleting all selected notes
@@ -314,9 +337,6 @@ namespace Ratios
             //getting the snapped position of the mouse
             float tempX = getStartTimeFromX(mouseState.X);
             float tempY = mouseState.Y;
-
-            float ratio = (float)Math.Pow(2, 1.0f / 12.0f);
-            float baseFreq = 440;
 
             float xSnap = 1;
 
