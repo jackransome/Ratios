@@ -259,7 +259,7 @@ namespace Ratios
             else if (mouseState.LeftButton == ButtonState.Released && previousLeftButton == ButtonState.Pressed)
             {
                 noteDrawing = false;
-                float frequency = getFreqFromY((int)selectInit.Y);
+                float frequency = (float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY((int)selectInit.Y) / baseFreq, ratio))));
                 float startTime = getStartTimeFromX((int)selectInit.X);
                 if (startTime < 0)
                 {
@@ -380,7 +380,8 @@ namespace Ratios
                 {
                     blackSquare.SetData(new Color[] { Color.GreenYellow });
                     spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.GreenYellow);
-                } else
+                }
+                else
                 {
                     blackSquare.SetData(new Color[] { Color.Black });
                     spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.Black);
@@ -431,11 +432,20 @@ namespace Ratios
             //drawing bottom border
             spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(20000), (int)screenDimensions.X, 2), Color.Black);
 
+            //drawing base freq line
+            blackSquare.SetData(new Color[] { Color.White });
+            spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(baseFreq), (int)screenDimensions.X, 2), Color.White * 0.1f);
+
             //draw verticle lines
             for (int i = 0; i < 1000; i++)
             {
-                blackSquare.SetData(new Color[] { Color.White });
                 spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(i), 0, 2, (int)screenDimensions.Y), Color.White * 0.1f);
+            }
+
+            //draw horizontal lines
+            for (int i = -10; i < 10; i++)
+            {
+                spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq((float)(baseFreq*Math.Pow(ratio, i))), (int)screenDimensions.X, 2), Color.White * 0.1f);
             }
 
             spriteBatch.End();
