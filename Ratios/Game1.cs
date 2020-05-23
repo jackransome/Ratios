@@ -33,7 +33,7 @@ namespace Ratios
 
         Vector2 scale;
 
-        float xZoomFactor = 10;
+        float xZoomFactor = 20;
 
         float yZoomFactor = 1;
 
@@ -69,7 +69,6 @@ namespace Ratios
         
         private DynamicSoundEffectInstance _instance;
 
-        // On your class
         public const int SamplesPerBuffer = 500;
         private float[,] _workingBuffer;
         private byte[] _xnaBuffer;
@@ -78,6 +77,8 @@ namespace Ratios
 
         float ratio = (float)Math.Pow(2, 1.0f / 12.0f);
         float baseFreq = 440;
+
+        float xSnap = 0.25f;
 
         public Game1()
         {
@@ -260,7 +261,7 @@ namespace Ratios
             {
                 noteDrawing = false;
                 float frequency = (float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY((int)selectInit.Y) / baseFreq, ratio))));
-                float startTime = getStartTimeFromX((int)selectInit.X);
+                float startTime = (float)(xSnap * Math.Round(getStartTimeFromX((int)selectInit.X) / xSnap));
                 if (startTime < 0)
                 {
                     startTime = 0;
@@ -329,9 +330,7 @@ namespace Ratios
             float tempX = getStartTimeFromX(mouseState.X);
             float tempY = mouseState.Y;
 
-            float xSnap = 1;
-
-            snappedMouse.X = getXFromStartTime((int)(xSnap * Math.Round(tempX / xSnap)));
+            snappedMouse.X = getXFromStartTime((float)(xSnap * Math.Round(tempX / xSnap)));
             snappedMouse.Y = getYFromFreq((float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY(mouseState.Y)/ baseFreq, ratio)))));
 
             previousLeftButton = mouseState.LeftButton;
@@ -394,11 +393,20 @@ namespace Ratios
                     spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), (int)(mouseState.Y - selectInit.Y)), Color.Green * 0.33f);
                 }
             }
-                //drawing the red bit when drawing a new note
-            if (noteDrawing && getStartTimeFromX((int)selectInit.X) >= 0 && getFreqFromY((int)selectInit.Y) > 30 && getFreqFromY((int)selectInit.Y) < 20000 && snappedMouse.X > selectInit.X)
+
+            //drawing the red bit when drawing a new note
+            float frequencyFromMouseY = (float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY((int)selectInit.Y) / baseFreq, ratio))));
+            if (noteDrawing && frequencyFromMouseY > 20 && frequencyFromMouseY < 20000 && snappedMouse.X > selectInit.X)
             {
                 blackSquare.SetData(new Color[] { Color.Red });
-                spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(snappedMouse.X - selectInit.X), 2), Color.Red * 0.33f);
+                if (getStartTimeFromX((int)selectInit.X) < 0)
+                {
+                    spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(0), (int)selectInit.Y, (int)(snappedMouse.X - selectInit.X), 2), Color.Red * 0.33f);
+                }
+                else
+                {
+                    spriteBatch.Draw(blackSquare, new Rectangle((int)selectInit.X, (int)selectInit.Y, (int)(snappedMouse.X - selectInit.X), 2), Color.Red * 0.33f);
+                }
             }
 
             //drawing mouse cursor
@@ -411,7 +419,6 @@ namespace Ratios
 
             //drawing the play line
             blackSquare.SetData(new Color[] { Color.Yellow });
-            float u = (float)_time * (bpm / 60.0f);
             spriteBatch.Draw(blackSquare, new Rectangle((int)getXFromStartTime((float)_time*(bpm/60.0f)), 0, 2, (int)screenDimensions.Y), Color.Yellow);
 
             //drawing left border
@@ -427,18 +434,27 @@ namespace Ratios
             blackSquare.SetData(new Color[] { Color.White });
             spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq(baseFreq), (int)screenDimensions.X, 2), Color.White * 0.1f);
 
+            int totalVerticleLines = (int)(screenDimensions.X/(xZoomFactor*xSnap));
+            int firstVertStartTime = (int)(getStartTimeFromX(0)/xSnap);
+            if (firstVertStartTime < 0) firstVertStartTime = 0;
             //draw verticle lines
-            for (int i = 0; i < 1000; i++)
+            for (int i = firstVertStartTime; i < firstVertStartTime + totalVerticleLines; i++)
             {
-                spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(i), 0, 2, (int)screenDimensions.Y), Color.White * 0.1f);
+                spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(i*xSnap), 0, 2, (int)screenDimensions.Y), Color.White * 0.1f);
             }
-
+            float verticleGap = -(getYFromFreq((float)(baseFreq * Math.Pow(ratio, 1))) - getYFromFreq((float)(baseFreq)));
+            int linesBelow = (int)(Math.Log(20 / baseFreq, ratio));
+            int linesAbove = (int)(Math.Log(20000 / baseFreq, ratio));
             //draw horizontal lines
-            for (int i = -10; i < 10; i++)
+            for (int i = linesBelow; i < linesAbove; i++)
             {
-                spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq((float)(baseFreq*Math.Pow(ratio, i))), (int)screenDimensions.X, 2), Color.White * 0.1f);
+                if ((getStartTimeFromX(0) / xSnap) < 0){
+                    spriteBatch.Draw(blackSquare, new Rectangle(getXFromStartTime(0), getYFromFreq((float)(baseFreq * Math.Pow(ratio, i))), (int)screenDimensions.X, 2), Color.White * 0.1f);
+                } else
+                {
+                    spriteBatch.Draw(blackSquare, new Rectangle(0, getYFromFreq((float)(baseFreq * Math.Pow(ratio, i))), (int)screenDimensions.X, 2), Color.White * 0.1f);
+                }
             }
-
             spriteBatch.End();
 
             base.Draw(gameTime);

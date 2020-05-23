@@ -44,22 +44,29 @@ namespace Ratios
             return 0;
         }
 
-        public double readSample(string _name, float _sampleTime)
+        public double readSample(string _name, float _sampleTime, bool _loop)
         {
             for (int i = 0; i < samples.Count; i++)
             {
                 if (samples[i].name == _name)
                 {
-                    if (_sampleTime < samples[i].left.Length)
+                    //looping:
+                    if (_loop)
+                    {
+                        while (_sampleTime >= samples[i].left.Length - 1)
+                        {
+                            _sampleTime -= samples[i].left.Length - 1;
+                        }
+                    }
+                    if (_sampleTime < samples[i].left.Length-1)
                     {
                         if (_sampleTime != Math.Floor(_sampleTime))
                         {
                             return samples[i].left[(int)Math.Floor(_sampleTime)] * (_sampleTime - Math.Floor(_sampleTime)) + samples[i].left[(int)Math.Ceiling(_sampleTime)] * (Math.Ceiling(_sampleTime) - _sampleTime);
                         } else
                         {
-
+                            return samples[i].left[(int)_sampleTime];
                         }
-                        return samples[i].left[(int)_sampleTime];
                     }
                     else
                     {

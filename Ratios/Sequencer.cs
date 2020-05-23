@@ -12,6 +12,7 @@ class Note
     public bool selected;
     public float volume;
     public string sampleName = null;
+    public bool loops = true;
     public Note(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
     {
         volume = 0.1f;
@@ -77,7 +78,7 @@ namespace Ratios
                         {
                             //if (_channel)
                             //{
-                                output += fileLoader.readSample(notes[i].sampleName, (float)((44100 * (beatTime - notes[i].startTime) * 60 / bpm) * notes[i].frequency / 261.63));
+                                output += fileLoader.readSample(notes[i].sampleName, (float)((44100 * (beatTime - notes[i].startTime) * 60 / bpm) * notes[i].frequency / 261.63), notes[i].loops);
                             //}
                             //else
                             //{
