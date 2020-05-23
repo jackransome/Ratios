@@ -87,7 +87,7 @@ namespace Ratios
             //generating notes C1 to B8
             for (int i = 0; i < 84; i++)
             {
-                sequencer.addNote((float)(32.70 * Math.Pow((float)Math.Pow(2, 1.0f / 12.0f), i)), i, 1, 1, "sample1");
+                //sequencer.addNote((float)(32.70 * Math.Pow((float)Math.Pow(2, 1.0f / 12.0f), i)), i, 1, 1, "sample1");
             }
 
             graphics = new GraphicsDeviceManager(this);
@@ -230,11 +230,11 @@ namespace Ratios
 
             if (keyboardState.IsKeyDown(Keys.G))
             {
-                ratio = (float)Math.Pow(2, 1.0f / 12.0f);
+                ratio = 10.0f/9.0f;//(float)Math.Pow(2, 1.0f / 12.0f);
             }
             if (keyboardState.IsKeyDown(Keys.H))
             {
-                ratio = 1.5f;
+                ratio = 5.0f/4.0f;
             }
             if (keyboardState.IsKeyDown(Keys.Delete))
             {
@@ -286,47 +286,38 @@ namespace Ratios
                     {
                         sequencer.notes[i].setSelected(false);
                     }
-                    
-                    //checking startTime
+
                     if (mouseState.X < selectInit.X)
                     {
-                        if (mouseState.X < getXFromStartTime(sequencer.notes[i].startTime) && getXFromStartTime(sequencer.notes[i].startTime) < selectInit.X)
+                        if (mouseState.Y < selectInit.Y)
                         {
-                            //checking freq:
-                            if (mouseState.Y < selectInit.Y)
+                            if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)mouseState.Y, (int)(selectInit.X - mouseState.X), (int)(selectInit.Y - mouseState.Y)))
                             {
-                                if (mouseState.Y < getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) < selectInit.Y)
-                                {
-                                    sequencer.notes[i].setSelected(true);
-                                }
+                                sequencer.notes[i].setSelected(true);
                             }
-                            else if (mouseState.Y > selectInit.Y)
+                        }
+                        else if (mouseState.Y > selectInit.Y)
+                        {
+                            if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)selectInit.Y, (int)(selectInit.X - mouseState.X), (int)(mouseState.Y - selectInit.Y)))
                             {
-                                if (mouseState.Y > getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) > selectInit.Y)
-                                {
-                                    sequencer.notes[i].setSelected(true);
-                                }
+                                sequencer.notes[i].setSelected(true);
                             }
                         }
                     }
                     else if (mouseState.X > selectInit.X)
                     {
-                        if (mouseState.X > getXFromStartTime(sequencer.notes[i].startTime) && getXFromStartTime(sequencer.notes[i].startTime) > selectInit.X)
+                        if (mouseState.Y < selectInit.Y)
                         {
-                            //checking freq:
-                            if (mouseState.Y < selectInit.Y)
+                            if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, mouseState.Y, (int)(mouseState.X - selectInit.X), (int)(selectInit.Y - mouseState.Y)))
                             {
-                                if (mouseState.Y < getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) < selectInit.Y)
-                                {
-                                    sequencer.notes[i].setSelected(true);
-                                }
+                                sequencer.notes[i].setSelected(true);
                             }
-                            else if (mouseState.Y > selectInit.Y)
+                        }
+                        else if (mouseState.Y > selectInit.Y)
+                        {
+                            if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), (int)(mouseState.Y - selectInit.Y)))
                             {
-                                if (mouseState.Y > getYFromFreq(sequencer.notes[i].frequency) && getYFromFreq(sequencer.notes[i].frequency) > selectInit.Y)
-                                {
-                                    sequencer.notes[i].setSelected(true);
-                                }
+                                sequencer.notes[i].setSelected(true);
                             }
                         }
                     }
@@ -481,6 +472,20 @@ namespace Ratios
             // Applying x zoom
             x = ((xZoomFactor * (x - zoomPoint.X)) + zoomPoint.X);
             return (int)x;
+        }
+
+        bool isNoteInRect(Note _note, int _x, int _y, int _width, int _height)
+        {
+            int XOfStart = getXFromStartTime(_note.startTime);
+            int XOfFinish = getXFromStartTime(_note.startTime + _note.duration);
+            if (getYFromFreq(_note.frequency) > _y && getYFromFreq(_note.frequency) < _y + _height)
+            {
+                if (XOfStart < _x + _width && XOfFinish > _x)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         // from https://www.david-gouveia.com/creating-a-basic-synth-in-xna-part-ii
