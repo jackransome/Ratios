@@ -270,6 +270,8 @@ namespace Ratios
                 if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
                     sequencer.addNote(frequency, startTime, duration, 1, "sample1");
+                    sequencer.deselectAll();
+                    sequencer.setSelected(sequencer.notes.Count - 1, true);
                 }
             }
             else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
