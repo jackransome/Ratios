@@ -269,7 +269,7 @@ namespace Ratios
                 float duration = getStartTimeFromX((int)snappedMouse.X) - startTime;
                 if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                 {
-                    sequencer.addNote(frequency, startTime, duration, 1, "sample1");
+                    sequencer.addNote(frequency, startTime, duration, 0.1f, null);
                     sequencer.deselectAll();
                     sequencer.setSelected(sequencer.notes.Count - 1, true);
                 }

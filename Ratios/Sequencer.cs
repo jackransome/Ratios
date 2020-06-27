@@ -86,7 +86,7 @@ namespace Ratios
                             //}
                         } else
                         {
-                            output += synthesizer.sinGenerator(beatTime, notes[i].frequency) * notes[i].volume;
+                            output += synthesizer.WaveGenerator(beatTime, notes[i].frequency, 0) * notes[i].volume;
                         }
                     }
                 }
