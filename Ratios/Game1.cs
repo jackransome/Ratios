@@ -45,7 +45,7 @@ namespace Ratios
 
         float maxYZoomFactor = 30;
 
-        Vector2 cameraPosition = new Vector2(1920/2, 1080/2);
+        Vector2 cameraPosition = new Vector2(980, 1080);
 
         int previousScrollValue = 0;
 
@@ -157,193 +157,196 @@ namespace Ratios
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            mouseState = Mouse.GetState();
-            keyboardState = Keyboard.GetState();
-            if (keyboardState.IsKeyDown(Keys.Escape))
-                Exit();
+            if (IsActive)
+            {
+                mouseState = Mouse.GetState();
+                keyboardState = Keyboard.GetState();
+                if (keyboardState.IsKeyDown(Keys.Escape))
+                    Exit();
 
-            if (keyboardState.IsKeyDown(Keys.Space))
-            {
-                _time = 0;
-            }
+                if (keyboardState.IsKeyDown(Keys.Space))
+                {
+                    _time = 0;
+                }
 
-            if (keyboardState.IsKeyDown(Keys.LeftControl))
-            {
-                if (mouseState.ScrollWheelValue < previousScrollValue)
+                if (keyboardState.IsKeyDown(Keys.LeftControl))
                 {
-                    if (xZoomFactor > minXZoomFactor)
+                    if (mouseState.ScrollWheelValue < previousScrollValue)
                     {
-                        xZoomFactor /= 1.25f;
+                        if (xZoomFactor > minXZoomFactor)
+                        {
+                            xZoomFactor /= 1.25f;
+                        }
+                    }
+                    else if (mouseState.ScrollWheelValue > previousScrollValue)
+                    {
+                        if (xZoomFactor < maxXZoomFactor)
+                        {
+                            xZoomFactor *= 1.25f;
+                        }
                     }
                 }
-                else if (mouseState.ScrollWheelValue > previousScrollValue)
+                else
                 {
-                    if (xZoomFactor < maxXZoomFactor)
+                    if (mouseState.ScrollWheelValue < previousScrollValue)
                     {
-                        xZoomFactor *= 1.25f;
+                        if (yZoomFactor > minYZoomFactor)
+                        {
+                            yZoomFactor /= 1.25f;
+                        }
+                    }
+                    else if (mouseState.ScrollWheelValue > previousScrollValue)
+                    {
+                        if (yZoomFactor < maxYZoomFactor)
+                        {
+                            yZoomFactor *= 1.25f;
+                        }
                     }
                 }
-            } else
-            {
-                if (mouseState.ScrollWheelValue < previousScrollValue)
+                if (keyboardState.IsKeyDown(Keys.W) && cameraPosition.Y > screenDimensions.Y / 2.0f)
                 {
-                    if (yZoomFactor > minYZoomFactor)
+                    cameraPosition.Y -= 20 / yZoomFactor;
+                }
+                if (keyboardState.IsKeyDown(Keys.A) && cameraPosition.X > screenDimensions.X / 2.0f)
+                {
+                    cameraPosition.X -= 20 / xZoomFactor;
+                }
+                if (keyboardState.IsKeyDown(Keys.S) && cameraPosition.Y < screenDimensions.Y * 1.5)
+                {
+                    cameraPosition.Y += 20 / yZoomFactor;
+                }
+                if (keyboardState.IsKeyDown(Keys.D))
+                {
+                    cameraPosition.X += 20 / xZoomFactor;
+                }
+                //setting the base note to the first note selected
+                if (keyboardState.IsKeyDown(Keys.F))
+                {
+                    for (int i = 0; i < sequencer.notes.Count; i++)
                     {
-                        yZoomFactor /= 1.25f;
+                        if (sequencer.notes[i].selected)
+                        {
+                            baseFreq = sequencer.notes[i].frequency;
+                            break;
+                        }
                     }
                 }
-                else if (mouseState.ScrollWheelValue > previousScrollValue)
-                {
-                    if (yZoomFactor < maxYZoomFactor)
-                    {
-                        yZoomFactor *= 1.25f;
-                    }
-                }
-            }
-            if (keyboardState.IsKeyDown(Keys.W) && cameraPosition.Y > screenDimensions.Y/2.0f)
-            {
-                cameraPosition.Y -= 20 / yZoomFactor;
-            }
-            if (keyboardState.IsKeyDown(Keys.A) && cameraPosition.X > screenDimensions.X/2.0f)
-            {
-                cameraPosition.X -= 20 / xZoomFactor;
-            }
-            if (keyboardState.IsKeyDown(Keys.S) && cameraPosition.Y < screenDimensions.Y * 1.5)
-            {
-                cameraPosition.Y += 20 / yZoomFactor;
-            }
-            if (keyboardState.IsKeyDown(Keys.D))
-            {
-                cameraPosition.X += 20 / xZoomFactor;
-            }
-            //setting the base note to the first note selected
-            if (keyboardState.IsKeyDown(Keys.F))
-            {
-                for (int i = 0; i < sequencer.notes.Count; i++)
-                {
-                    if (sequencer.notes[i].selected)
-                    {
-                        baseFreq = sequencer.notes[i].frequency;
-                        break;
-                    }
-                }
-            }
 
-            if (keyboardState.IsKeyDown(Keys.G))
-            {
-                ratio = 10.0f/9.0f;//(float)Math.Pow(2, 1.0f / 12.0f);
-            }
-            if (keyboardState.IsKeyDown(Keys.H))
-            {
-                ratio = 5.0f/4.0f;
-            }
-            if (keyboardState.IsKeyDown(Keys.Delete))
-            {
-                //finding and deleting all selected notes
-                for (int i = 0; i < sequencer.notes.Count; i++)
+                if (keyboardState.IsKeyDown(Keys.G))
                 {
-                    if (sequencer.notes[i].selected)
+                    ratio = 10.0f / 9.0f;//(float)Math.Pow(2, 1.0f / 12.0f);
+                }
+                if (keyboardState.IsKeyDown(Keys.H))
+                {
+                    ratio = 5.0f / 4.0f;
+                }
+                if (keyboardState.IsKeyDown(Keys.Delete))
+                {
+                    //finding and deleting all selected notes
+                    for (int i = 0; i < sequencer.notes.Count; i++)
                     {
-                        sequencer.removeNote(i);
-                        i--;
+                        if (sequencer.notes[i].selected)
+                        {
+                            sequencer.removeNote(i);
+                            i--;
+                        }
                     }
                 }
-            }
-            if (mouseState.LeftButton == ButtonState.Pressed && previousLeftButton == ButtonState.Released)
-            {
-                noteDrawing = true;
-                selecting = false;
-                selectInit.X = snappedMouse.X;
-                selectInit.Y = snappedMouse.Y;
-                sequencer.deselectAll();
-            }
-            else if (mouseState.LeftButton == ButtonState.Released && previousLeftButton == ButtonState.Pressed)
-            {
-                noteDrawing = false;
-                float frequency = (float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY((int)selectInit.Y) / baseFreq, ratio))));
-                float startTime = (float)(xSnap * Math.Round(getStartTimeFromX((int)selectInit.X) / xSnap));
-                if (startTime < 0)
+                if (mouseState.LeftButton == ButtonState.Pressed && previousLeftButton == ButtonState.Released)
                 {
-                    startTime = 0;
-                }
-                float duration = getStartTimeFromX((int)snappedMouse.X) - startTime;
-                if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
-                {
-                    sequencer.addNote(frequency, startTime, duration, 0.1f, null);
+                    noteDrawing = true;
+                    selecting = false;
+                    selectInit.X = snappedMouse.X;
+                    selectInit.Y = snappedMouse.Y;
                     sequencer.deselectAll();
-                    sequencer.setSelected(sequencer.notes.Count - 1, true);
                 }
-            }
-            else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
-            {
-                selectInit.X = mouseState.X;
-                selectInit.Y = mouseState.Y;
-                selecting = true;
-            }
-            else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Released && previousRightButton == ButtonState.Pressed)
-            {
-                //select notes inside the rect:
-                for (int i = 0; i < sequencer.notes.Count; i++)
+                else if (mouseState.LeftButton == ButtonState.Released && previousLeftButton == ButtonState.Pressed)
                 {
-                    if (!keyboardState.IsKeyDown(Keys.LeftShift))
+                    noteDrawing = false;
+                    float frequency = (float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY((int)selectInit.Y) / baseFreq, ratio))));
+                    float startTime = (float)(xSnap * Math.Round(getStartTimeFromX((int)selectInit.X) / xSnap));
+                    if (startTime < 0)
                     {
-                        sequencer.notes[i].setSelected(false);
+                        startTime = 0;
                     }
-
-                    if (mouseState.X < selectInit.X)
+                    float duration = getStartTimeFromX((int)snappedMouse.X) - startTime;
+                    if (startTime >= 0 && frequency > 20 && frequency < 20000 && snappedMouse.X > selectInit.X)
                     {
-                        if (mouseState.Y < selectInit.Y)
-                        {
-                            if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)mouseState.Y, (int)(selectInit.X - mouseState.X), (int)(selectInit.Y - mouseState.Y)))
-                            {
-                                sequencer.notes[i].setSelected(true);
-                            }
-                        }
-                        else if (mouseState.Y > selectInit.Y)
-                        {
-                            if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)selectInit.Y, (int)(selectInit.X - mouseState.X), (int)(mouseState.Y - selectInit.Y)))
-                            {
-                                sequencer.notes[i].setSelected(true);
-                            }
-                        }
-                    }
-                    else if (mouseState.X > selectInit.X)
-                    {
-                        if (mouseState.Y < selectInit.Y)
-                        {
-                            if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, mouseState.Y, (int)(mouseState.X - selectInit.X), (int)(selectInit.Y - mouseState.Y)))
-                            {
-                                sequencer.notes[i].setSelected(true);
-                            }
-                        }
-                        else if (mouseState.Y > selectInit.Y)
-                        {
-                            if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), (int)(mouseState.Y - selectInit.Y)))
-                            {
-                                sequencer.notes[i].setSelected(true);
-                            }
-                        }
+                        sequencer.addNote(frequency, startTime, duration, 0.1f, null);
+                        sequencer.deselectAll();
+                        sequencer.setSelected(sequencer.notes.Count - 1, true);
                     }
                 }
-                selecting = false;
+                else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Pressed && previousRightButton == ButtonState.Released)
+                {
+                    selectInit.X = mouseState.X;
+                    selectInit.Y = mouseState.Y;
+                    selecting = true;
+                }
+                else if (mouseState.LeftButton == ButtonState.Released && mouseState.RightButton == ButtonState.Released && previousRightButton == ButtonState.Pressed)
+                {
+                    //select notes inside the rect:
+                    for (int i = 0; i < sequencer.notes.Count; i++)
+                    {
+                        if (!keyboardState.IsKeyDown(Keys.LeftShift))
+                        {
+                            sequencer.notes[i].setSelected(false);
+                        }
+
+                        if (mouseState.X < selectInit.X)
+                        {
+                            if (mouseState.Y < selectInit.Y)
+                            {
+                                if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)mouseState.Y, (int)(selectInit.X - mouseState.X), (int)(selectInit.Y - mouseState.Y)))
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                            else if (mouseState.Y > selectInit.Y)
+                            {
+                                if (isNoteInRect(sequencer.notes[i], (int)mouseState.X, (int)selectInit.Y, (int)(selectInit.X - mouseState.X), (int)(mouseState.Y - selectInit.Y)))
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                        }
+                        else if (mouseState.X > selectInit.X)
+                        {
+                            if (mouseState.Y < selectInit.Y)
+                            {
+                                if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, mouseState.Y, (int)(mouseState.X - selectInit.X), (int)(selectInit.Y - mouseState.Y)))
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                            else if (mouseState.Y > selectInit.Y)
+                            {
+                                if (isNoteInRect(sequencer.notes[i], (int)selectInit.X, (int)selectInit.Y, (int)(mouseState.X - selectInit.X), (int)(mouseState.Y - selectInit.Y)))
+                                {
+                                    sequencer.notes[i].setSelected(true);
+                                }
+                            }
+                        }
+                    }
+                    selecting = false;
+                }
+
+                //getting the snapped position of the mouse
+                float tempX = getStartTimeFromX(mouseState.X);
+                float tempY = mouseState.Y;
+
+                snappedMouse.X = getXFromStartTime((float)(xSnap * Math.Round(tempX / xSnap)));
+                snappedMouse.Y = getYFromFreq((float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY(mouseState.Y) / baseFreq, ratio)))));
+                
+                previousLeftButton = mouseState.LeftButton;
+                previousRightButton = mouseState.RightButton;
+                previousScrollValue = mouseState.ScrollWheelValue;
+
+                while (_instance.PendingBufferCount < 3)
+                {
+                    SubmitBuffer();
+                }
             }
-
-            //getting the snapped position of the mouse
-            float tempX = getStartTimeFromX(mouseState.X);
-            float tempY = mouseState.Y;
-
-            snappedMouse.X = getXFromStartTime((float)(xSnap * Math.Round(tempX / xSnap)));
-            snappedMouse.Y = getYFromFreq((float)(baseFreq * Math.Pow(ratio, Math.Round(Math.Log(getFreqFromY(mouseState.Y)/ baseFreq, ratio)))));
-
-            previousLeftButton = mouseState.LeftButton;
-            previousRightButton = mouseState.RightButton;
-            previousScrollValue = mouseState.ScrollWheelValue;
-
-            while (_instance.PendingBufferCount < 3)
-            {
-                SubmitBuffer();
-            }
-
             base.Update(gameTime);
         }
 

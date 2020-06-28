@@ -1,0 +1,8 @@
+Proper GUI system
+Design and implement better intuitive interface for microtonality
+	Ability to select 2 notes and see the ratio between them
+	A visual (colour?) indicator of the simplicity of ratio between different notes
+Ability to change time slice dimensions
+Ability to choose different samples
+Ability to set position to play from
+A help page for controls(must be easily updatable)

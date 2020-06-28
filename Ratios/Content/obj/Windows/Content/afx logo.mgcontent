@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SourceFile>C:/Users/Jack/Documents/GitHub/Ratios/Ratios/Content/afx logo.png</SourceFile>
-  <SourceTime>2020-06-05T14:49:44.0156913+10:00</SourceTime>
+  <SourceTime>2020-05-16T15:36:24.5572122+10:00</SourceTime>
   <DestFile>C:/Users/Jack/Documents/GitHub/Ratios/Ratios/Content/bin/Windows/Content/afx logo.xnb</DestFile>
-  <DestTime>2020-06-27T15:39:21.3842571+10:00</DestTime>
+  <DestTime>2020-06-27T19:01:45.6918966+10:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2018-12-09T03:35:54+11:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
