@@ -10,7 +10,9 @@ namespace Ratios
     {
         public double WaveGenerator(double _time, float _frequency, int _waveForm)
         {
-            double phase = (_time * _frequency) - Math.Floor(_time * _frequency);
+            // chops off the 6.0 part of 6.6
+            //double phase = (_time * _frequency) - Math.Floor(_time * _frequency);
+            double phase = (_time * _frequency);
             switch (_waveForm)
             {
                 case 0:
@@ -56,7 +58,8 @@ namespace Ratios
         }
         private double PhaseModulator(double _phase)
         {
-            return Math.Pow(_phase, 2);
+            return Math.Sin(_phase * 2 * Math.PI)/2 + 1;
+            //return Math.Pow(_phase, 2);
         }
     }
 }

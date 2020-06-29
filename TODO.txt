@@ -1,8 +1,18 @@
 Proper GUI system
+	Needs text drawing
+	buttons
 Design and implement better intuitive interface for microtonality
 	Ability to select 2 notes and see the ratio between them
 	A visual (colour?) indicator of the simplicity of ratio between different notes
+		could be brown - red - yellow - green gradient for dissonance to simplicity
+		Maybe draw verticle(diagonal in some cases?) coloured lines between every note in selection (make this a setting?)
+			need to write some code to find shortest line between two line segments
+Synth selector GUI (instrument selector? wityh colour coding options)
 Ability to change time slice dimensions
+	should be a gui thing
 Ability to choose different samples
+	gui thing(like the 3ddls file browser but you can click)
 Ability to set position to play from
+	maybe clicking at a point without selecting a note sets the next start play time to that point
 A help page for controls(must be easily updatable)
+	should use some text drawing function for this part, maybe it'll read a txt file?
