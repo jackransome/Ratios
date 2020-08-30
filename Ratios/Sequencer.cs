@@ -36,7 +36,55 @@ namespace Ratios
         public float bpm;
         Synthesizer synthesizer = new Synthesizer();
         public List<Note> notes = new List<Note>();
+        public List<Note> thirdNotes = new List<Note>();
         FileLoader fileLoader;
+
+        public void scanForNewThirdNotes(Note newNote)
+        {
+            for (int i = 0; i < notes.Count; i++) { 
+                float beginning = 0, end = 0;
+                if (overlapCheck(notes[i], newNote, ref beginning, ref end))
+                {
+                    addThirdNote(20, beginning, end - beginning, 0, "CHANGE THIS");
+                }
+            }
+        }
+        bool overlapCheck(Note note1, Note note2, ref float beginning, ref float end)
+        {
+            if (note1.startTime < note2.startTime + note2.duration)
+            {
+                if (note1.startTime > note2.startTime)
+                {
+                    if (note1.startTime +note1.duration > note2.startTime + note2.duration)
+                    {
+                        beginning = note1.startTime;
+                        end = note2.startTime + note2.duration;
+                    }
+                    else
+                    {
+                        beginning = note2.startTime;
+                        end = note2.startTime + note2.duration;
+                    }
+
+                }
+                else
+                {
+                    beginning = note2.startTime;
+                    end = note2.startTime + note2.duration;
+                }
+                return true;
+            }
+            if (note1.startTime + note1.duration > note2.startTime)
+            {
+                if (note1.startTime + note1.duration < note2.startTime + note2.duration)
+                {
+                    beginning = note2.startTime;
+                    end = note1.startTime + note1.duration;
+                }
+                return true;
+            }
+            return false;
+        }
         public void attachFileLoader(FileLoader _fileLoader)
         {
             fileLoader = _fileLoader;
@@ -44,6 +92,11 @@ namespace Ratios
         public void addNote(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
         {
             notes.Add(new Note(_frequency, _startTime, _duration, _volume, _sampleName));
+            scanForNewThirdNotes(notes[notes.Count - 1]);
+        }
+        public void addThirdNote(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
+        {
+            thirdNotes.Add(new Note(_frequency, _startTime, _duration, _volume, _sampleName));
         }
         public void removeNote(int _index)
         {

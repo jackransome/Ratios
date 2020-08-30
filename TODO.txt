@@ -16,3 +16,5 @@ Ability to set position to play from
 	maybe clicking at a point without selecting a note sets the next start play time to that point
 A help page for controls(must be easily updatable)
 	should use some text drawing function for this part, maybe it'll read a txt file?
+Renderer option:
+	creating wav file from track
