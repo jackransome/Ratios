@@ -234,9 +234,13 @@ namespace Ratios
 
                 if (keyboardState.IsKeyDown(Keys.G))
                 {
-                    ratio = 10.0f / 9.0f;//(float)Math.Pow(2, 1.0f / 12.0f);
+                    ratio = 2.0f / 1.0f;//(float)Math.Pow(2, 1.0f / 12.0f);
                 }
                 if (keyboardState.IsKeyDown(Keys.H))
+                {
+                    ratio = 3.0f / 2.0f;
+                }
+                if (keyboardState.IsKeyDown(Keys.J))
                 {
                     ratio = 5.0f / 4.0f;
                 }
@@ -381,6 +385,14 @@ namespace Ratios
                     blackSquare.SetData(new Color[] { Color.Black });
                     spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.notes[i].duration * xZoomFactor), 2), Color.Black);
                 }
+            }
+
+            for (int i = 0; i < sequencer.thirdNotes.Count; i++)
+            {
+                int x = getXFromStartTime(sequencer.thirdNotes[i].startTime);
+                int y = getYFromFreq(sequencer.thirdNotes[i].frequency);
+                blackSquare.SetData(new Color[] { Color.GreenYellow });
+                spriteBatch.Draw(blackSquare, new Rectangle(x, y, (int)(sequencer.thirdNotes[i].duration * xZoomFactor), 2), Color.Red);
             }
 
             //drawing the green selection rectangle

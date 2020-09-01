@@ -31,6 +31,38 @@ class Note
 
 namespace Ratios
 {
+
+    public struct Fraction
+    {
+        public int Numerator { get; private set; }
+        public int Denominator { get; private set; }
+        public float DecimalValue { get { return ((float)Numerator) / Denominator; } }
+        public override string ToString()
+        {
+            return Numerator.ToString() + "/" + Denominator.ToString();
+        }
+
+        public static Fraction FromDecimal(float x)
+        {
+            float z = x;
+            float dPrev = 0;
+            float dCur = 1;
+            float dTemp = dCur;
+            float n = 0;
+
+            while (Math.Abs(n / dCur - x) > 1E-6)
+            {
+                z = 1 / (z - (int)z);
+                dTemp = dCur;
+                dCur = (dCur * (int)z) + dPrev;
+                dPrev = dTemp;
+                n = (float)Math.Round(x * dCur);
+            }
+
+            return new Fraction { Numerator = (int)n, Denominator = (int)dCur };
+        }
+    }
+
     class Sequencer
     {
         public float bpm;
@@ -41,45 +73,59 @@ namespace Ratios
 
         public void scanForNewThirdNotes(Note newNote)
         {
-            for (int i = 0; i < notes.Count; i++) { 
-                float beginning = 0, end = 0;
-                if (overlapCheck(notes[i], newNote, ref beginning, ref end))
+            float beginning = 0, end = 0;
+            for (int i = 0; i < notes.Count; i++) {
+                if (notes[i].frequency != newNote.frequency)
                 {
-                    addThirdNote(20, beginning, end - beginning, 0, "CHANGE THIS");
+                    if (overlapCheck(notes[i], newNote, ref beginning, ref end))
+                    {
+                        addThirdNote(getThirdFrequency(notes[i].frequency, newNote.frequency), beginning, end - beginning, 0, null);
+                    }
                 }
             }
         }
+
+        float getThirdFrequency(float f1, float f2)
+        {
+            Fraction fraction = Fraction.FromDecimal(f1/f2);
+
+            
+            float value = f1/fraction.Numerator;
+            return value;
+        }
+
         bool overlapCheck(Note note1, Note note2, ref float beginning, ref float end)
         {
-            if (note1.startTime < note2.startTime + note2.duration)
+            if (note1.startTime <= note2.startTime + note2.duration)
             {
-                if (note1.startTime > note2.startTime)
+                if (note1.startTime >= note2.startTime)
                 {
-                    if (note1.startTime +note1.duration > note2.startTime + note2.duration)
+                    if (note1.startTime + note1.duration >= note2.startTime + note2.duration)
                     {
                         beginning = note1.startTime;
                         end = note2.startTime + note2.duration;
                     }
                     else
                     {
-                        beginning = note2.startTime;
-                        end = note2.startTime + note2.duration;
+                        beginning = note1.startTime;
+                        end = note1.startTime + note1.duration;
                     }
-
+                    return true;
                 }
-                else
-                {
-                    beginning = note2.startTime;
-                    end = note2.startTime + note2.duration;
-                }
-                return true;
-            }
-            if (note1.startTime + note1.duration > note2.startTime)
-            {
-                if (note1.startTime + note1.duration < note2.startTime + note2.duration)
+                else if (note1.startTime + note1.duration <= note2.startTime + note2.duration)
                 {
                     beginning = note2.startTime;
                     end = note1.startTime + note1.duration;
+                    return true;
+                }
+                
+            }
+            if (note1.startTime + note1.duration >= note2.startTime + note2.duration)
+            {
+                if (note1.startTime <= note2.startTime)
+                {
+                    beginning = note2.startTime;
+                    end = note2.startTime + note2.duration;
                 }
                 return true;
             }
@@ -101,6 +147,15 @@ namespace Ratios
         public void removeNote(int _index)
         {
             notes.RemoveAt(_index);
+            rescanAllThirdNotes();
+        }
+        public void rescanAllThirdNotes()
+        {
+            thirdNotes.Clear();
+            for (int i = 0; i < notes.Count; i++)
+            {
+                scanForNewThirdNotes(notes[i]);
+            }
         }
         public void setSelected(int _index, bool _selected)
         {
