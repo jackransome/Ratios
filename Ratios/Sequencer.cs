@@ -11,7 +11,7 @@ class Note
     public float duration; // in beats
     public bool selected;
     public float volume;
-    public string sampleName = null;
+    public string sampleName = "s";
     public bool loops = true;
     public Note(float _frequency, float _startTime, float _duration, float _volume, string _sampleName)
     {
@@ -122,7 +122,7 @@ namespace Ratios
             }
             if (note1.startTime + note1.duration >= note2.startTime + note2.duration)
             {
-                if (note1.startTime <= note2.startTime)
+                if (note1.startTime <= note2.startTime + note2.duration)
                 {
                     beginning = note2.startTime;
                     end = note2.startTime + note2.duration;

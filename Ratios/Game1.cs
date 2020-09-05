@@ -242,6 +242,10 @@ namespace Ratios
                 }
                 if (keyboardState.IsKeyDown(Keys.J))
                 {
+                    ratio = 4.0f / 3.0f;
+                }
+                if (keyboardState.IsKeyDown(Keys.K))
+                {
                     ratio = 5.0f / 4.0f;
                 }
                 if (keyboardState.IsKeyDown(Keys.Delete))
