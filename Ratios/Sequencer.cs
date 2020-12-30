@@ -201,5 +201,9 @@ namespace Ratios
             }
             return (float)output;
         }
+        public void changeFrequency(int _index, float _ratio)
+        {
+            notes[_index].frequency *= _ratio;
+        }
     }
 }

@@ -80,6 +80,9 @@ namespace Ratios
 
         float xSnap = 0.25f;
 
+        bool lastDown;
+        bool lastUp;
+
         public Game1()
         {
             sequencer .attachFileLoader(fileLoader);
@@ -260,6 +263,54 @@ namespace Ratios
                         }
                     }
                 }
+
+                if (keyboardState.IsKeyDown(Keys.Up))
+                {
+                    if (!lastUp)
+                    {
+                        //finding and changing pitch of all selected notes
+                        for (int i = 0; i < sequencer.notes.Count; i++)
+                        {
+                            if (sequencer.notes[i].selected)
+                            {
+                                sequencer.changeFrequency(i, 1.01f);
+                            }
+                        }
+                        lastUp = true;
+                    } else
+                    {
+                        lastUp = true;
+                    }
+                }
+                else
+                {
+                    lastUp = false;
+                }
+
+                if (keyboardState.IsKeyDown(Keys.Down))
+                {
+                    if (!lastDown)
+                    {
+                        //finding and changing pitch of all selected notes
+                        for (int i = 0; i < sequencer.notes.Count; i++)
+                        {
+                            if (sequencer.notes[i].selected)
+                            {
+                                sequencer.changeFrequency(i, 0.99f);
+                            }
+                        }
+                        lastDown = true;
+                    }
+                    else
+                    {
+                        lastDown = true;
+                    }
+                }
+                else
+                {
+                    lastDown = false;
+                }
+
                 if (mouseState.LeftButton == ButtonState.Pressed && previousLeftButton == ButtonState.Released)
                 {
                     noteDrawing = true;
